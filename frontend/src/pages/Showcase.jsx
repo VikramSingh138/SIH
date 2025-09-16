@@ -494,26 +494,26 @@ const Showcase = () => {
         {
           name: "Pre-Processing Model",
           description: "Model for preprocessing phytoplankton images.",
-          size: "0.12 MB",
+          size: "127 KB",
           url: "https://github.com/THE-DEEPDAS/SIH-AI/blob/master/phytoplankton_preprocessing_pipeline.pkl"
         },
         {
-          name: "Classifier Model",
+          name: "Model 1 of Stacking Ensemble",
           description: "Model for classifying phytoplankton images.",
-          size: "0.12 MB",
-          url: "https://github.com/THE-DEEPDAS/SIH-AI/blob/master/phytoplankton_preprocessing_pipeline.pkl"
+          size: "9.34 MB",
+          url: "https://github.com/THE-DEEPDAS/SIH-AI/blob/master/Pelgas%20Dataset/mobilenetv2_regression.pth"
         },
         {
-          name: "Enumerator Model",
+          name: "Model 2 of Stacking Ensemble",
           description: "Model for enumerating phytoplankton images.",
-          size: "0.12 MB",
-          url: "https://github.com/THE-DEEPDAS/SIH-AI/blob/master/phytoplankton_preprocessing_pipeline.pkl"
+          size: "43 MB",
+          url: "https://github.com/THE-DEEPDAS/SIH-AI/blob/master/Pelgas%20Dataset/resnet18_regression.pth"
         },
         {
-          name: "Final Ensemble Model",
+          name: "Final Ensemble Model (Main)",
           description: "Final Ensemble Model for phytoplankton images.",
-          size: "0.12 MB",
-          url: "https://github.com/THE-DEEPDAS/SIH-AI/blob/master/phytoplankton_preprocessing_pipeline.pkl"
+          size: "254 KB",
+          url: "https://github.com/THE-DEEPDAS/SIH-AI/blob/master/Pelgas%20Dataset/phytoplankton_stacking_ensemble.pkl"
         }
       ].map((file, index) => (
         <motion.div
