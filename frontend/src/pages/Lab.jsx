@@ -93,34 +93,65 @@ const Lab = () => {
     setFormData({ ...formData, images: files })
   }
 
-  const handleSubmit = async () => {
-    setIsProcessing(true)
-    try {
-      const formDataToSend = new FormData()
-      formData.images.forEach(image => {
-        formDataToSend.append('images', image)
-      })
-      formDataToSend.append('metadata', JSON.stringify({
-        magnification: formData.magnification,
-        location: formData.location,
-        date: formData.date,
-        model: formData.model,
-        confidence: formData.confidence,
-        nmsIou: formData.nmsIou
-      }))
+  // List of phytoplankton classes for random output
+  const phytoplanktonClasses = [
+    'Diatoms', 'Dinoflagellates', 'Cyanobacteria', 'Green Algae', 'Coccolithophores',
+    'Silicoflagellates', 'Cryptophytes', 'Chrysophytes', 'Euglenoids', 'Raphidophytes'
+  ];
 
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/predict`,
-        formDataToSend,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
-      )
-      
-      setResults(response.data)
-    } catch (error) {
-      console.error('Error processing images:', error)
-    } finally {
-      setIsProcessing(false)
-    }
+  // Generate random results for demo
+  const generateRandomResults = () => {
+    const numClasses = Math.floor(Math.random() * 4) + 3; // 3-6 classes
+    const selectedClasses = phytoplanktonClasses
+      .sort(() => 0.5 - Math.random())
+      .slice(0, numClasses);
+    const species = selectedClasses.map(name => ({
+      name,
+      count: Math.floor(Math.random() * 50) + 10 // 10-59
+    }));
+    const totalCount = species.reduce((sum, s) => sum + s.count, 0);
+    const processingTime = `${(Math.random() * 2 + 0.5).toFixed(2)} s`;
+    const avgConfidence = `${(Math.random() * 0.2 + 0.8).toFixed(2)}`;
+    return {
+      species,
+      totalCount,
+      processingTime,
+      avgConfidence,
+      csvDownload: '#'
+    };
+  };
+
+  const handleSubmit = async () => {
+    setIsProcessing(true);
+    setTimeout(() => {
+      setResults(generateRandomResults());
+      setIsProcessing(false);
+    }, 1200);
+    // Uncomment below for real backend call
+    // try {
+    //   const formDataToSend = new FormData()
+    //   formData.images.forEach(image => {
+    //     formDataToSend.append('images', image)
+    //   })
+    //   formDataToSend.append('metadata', JSON.stringify({
+    //     magnification: formData.magnification,
+    //     location: formData.location,
+    //     date: formData.date,
+    //     model: formData.model,
+    //     confidence: formData.confidence,
+    //     nmsIou: formData.nmsIou
+    //   }))
+    //   const response = await axios.post(
+    //     `${import.meta.env.VITE_BACKEND_URL}/api/predict`,
+    //     formDataToSend,
+    //     { headers: { 'Content-Type': 'multipart/form-data' } }
+    //   )
+    //   setResults(response.data)
+    // } catch (error) {
+    //   console.error('Error processing images:', error)
+    // } finally {
+    //   setIsProcessing(false)
+    // }
   }
 
   const renderStepContent = () => {

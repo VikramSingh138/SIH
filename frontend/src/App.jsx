@@ -8,6 +8,7 @@ function App() {
   return (
     <div className="min-h-screen">
       <Navbar />
+      <div className="h-12" />
       <Routes>
         <Route path="/" element={<Showcase />} />
         <Route path="/run" element={<Lab />} />
