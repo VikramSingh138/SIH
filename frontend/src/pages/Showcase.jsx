@@ -42,15 +42,44 @@ const Showcase = () => {
     'YOLOv8': '/images/yolov8-img.png',
     'BERT': '/images/bert-img.jpeg',
     'Hardware Integration': '/images/hardware-img.png',
+    'Preprocessing Pipeline': '/images/resnet-img.png',
+    'Model Pipeline': '/images/yolov8-img.png',
+    'Integrated Full Approach': '/images/bert-img.jpeg',
   };
 
   // Track image error for fallback
   const [imgError, setImgError] = useState({});
   const [models, setModels] = useState([])
   const [downloads, setDownloads] = useState([])
-  const [currentCard, setCurrentCard] = useState(0);
+  const [currentSoftware, setCurrentSoftware] = useState(0);
+  const [currentHardware, setCurrentHardware] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [modalCard, setModalCard] = useState(null);
+
+  // Helper: split a long description into up to 3 readable paragraphs
+  const getParagraphs = (text, maxParagraphs = 3) => {
+    if (!text || typeof text !== 'string') return [];
+    // If author provided explicit blank-line breaks, honor them
+    const hasNewlines = /\n\s*\n|\r\n\r\n/.test(text) || /\n/.test(text);
+    if (hasNewlines) {
+      const parts = text
+        .split(/\n\s*\n|\r\n\r\n|\n/g)
+        .map(s => s.trim())
+        .filter(Boolean);
+      return parts.slice(0, maxParagraphs);
+    }
+    // Otherwise, split by sentences and group into up to 3 chunks
+    const sentences = (text.match(/[^.!?]+[.!?]+\s*/g) || [text]).map(s => s.trim());
+    const n = sentences.length;
+    if (n <= 2) return [sentences.join(' ')];
+    if (n <= 4) return [sentences.slice(0, Math.ceil(n / 2)).join(' '), sentences.slice(Math.ceil(n / 2)).join(' ')];
+    // 3 chunks roughly equal
+    const size = Math.ceil(n / 3);
+    const p1 = sentences.slice(0, size).join(' ');
+    const p2 = sentences.slice(size, size * 2).join(' ');
+    const p3 = sentences.slice(size * 2).join(' ');
+    return [p1, p2, p3].filter(Boolean).slice(0, maxParagraphs);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -80,48 +109,82 @@ const Showcase = () => {
     fetchData()
   }, [])
 
-  // Carousel auto-scroll effect
-  const approachCards = [
-    ...(
-      models.length > 0 ? models : [
-        {
-          id: 1,
-          name: "ResNet-50",
-          description: "Deep residual network for image classification tasks.",
-          image: "https://res.cloudinary.com/dzgx1hfe6/image/upload/v1757842934/resnet-img_t1mwbo.png",
-          metrics: { accuracy: "92%", speed: "Fast" },
-        },
-        {
-          id: 2,
-          name: "YOLOv8",
-          description: "Real-time object detection model optimized for speed and accuracy.",
-          image: "https://res.cloudinary.com/dzgx1hfe6/image/upload/v1757842933/yolov8-img_ddsco0.png",
-          metrics: { accuracy: "89%", speed: "Very Fast" },
-        },
-        {
-          id: 3,
-          name: "BERT",
-          description: "Transformer-based NLP model for text understanding and embeddings.",
-          image: "https://res.cloudinary.com/dzgx1hfe6/image/upload/v1757842933/bert-img_capjea.jpg",
-          metrics: { accuracy: "91%", speed: "Moderate" },
-        },
-      ]
-    ),
+  // Separate cards for software and hardware
+  const softwareCards = [
     {
-      id: 4,
-      name: "Hardware Integration",
-      description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Hardware integration enables seamless connection between AI models and embedded marine microscopy systems for real-time analysis.",
+      id: 'sw-1',
+      name: 'Preprocessing Pipeline',
+      description:
+        "Images are standardized and denoised before we look for organisms. We resize to 1024×1024, perform Gaussian blur denoising, and apply CLAHE separately to object and background regions to enhance contrast without amplifying noise. This produces a stable, high-contrast canvas across diverse microscopes and illumination conditions. " +
+        "We then convert to grayscale, threshold to isolate foreground, and run contour detection to find candidate organisms. In post‑ROI steps, we extract tight bounding boxes, reject tiny or spurious regions, and scale/normalize each crop. The output is a clean set of normalized ROIs that are ready for fast, reliable inference.",
+      image: 'https://res.cloudinary.com/dzgx1hfe6/image/upload/v1757842934/resnet-img_t1mwbo.png',
+      metrics: { input: '1024×1024', stages: 'Pre/ROI/Post', output: 'Normalized ROIs' },
+    },
+    {
+      id: 'sw-2',
+      name: 'Model Pipeline',
+      description:
+        "Two complementary backbones learn count-aware features from each ROI. A MobileNetV2 branch with dropout = 20% and linear head and a ResNet18 branch modified for regression each predict a vector of counts per class. This dual-view design balances efficiency and representational power, capturing both lightweight textures and deeper semantics. " +
+        "A RidgeCV meta‑learner fuses the two predictions to produce robust per‑class counts, a binary presence signal, and the top‑count classes. This stacking approach consistently improves stability on noisy marine imagery and overlapping organisms.",
+      image: 'https://res.cloudinary.com/dzgx1hfe6/image/upload/v1757842933/yolov8-img_ddsco0.png',
+      metrics: { backbones: 'MobileNetV2 + ResNet18', meta: 'RidgeCV', task: 'Count Regression' },
+    },
+    {
+      id: 'sw-3',
+      name: 'Integrated Full Approach',
+      description:
+        "End‑to‑end processing chains the preprocessing and model pipelines: incoming images are cleaned, ROIs are extracted and normalized, then each ROI is inferred by both backbones and fused by the meta‑learner. The system returns per‑class counts, presence, and a concise top‑classes summary. " +
+        "For interpretability, we also produce an ROI visualization alongside classwise predictions. The integrated design is built for embedded use: low power, high throughput, and consistent accuracy in real‑time microscopy workflows.",
+      image: 'https://res.cloudinary.com/dzgx1hfe6/image/upload/v1757842933/bert-img_capjea.jpg',
+      metrics: { runtime: '~2.2 ms/sample', fps: '≈27.3', outputs: 'Counts • Presence • Top‑10' },
+    },
+  ];
+
+  const hardwareCards = [
+    {
+      id: 'hw-1',
+      name: "Darkfield Illumination",
+      description: "In our setup we are using darkfield illumination, which simply means we shine light from the side rather than from directly underneath. Under this kind of lighting, only the edges and scattered light from very small particles, such as phytoplankton, become visible, while the background stays dark. This makes the microbes “glow” against a black background, enhancing their visibility. Importantly, when two or more microbes overlap in depth, the scattered light intensities add up. As a result, areas with overlapping microbes appear brighter than areas with a single organism. Technically, this difference in brightness can be quantified using intensity histograms of the captured image. By analyzing the distribution of pixel intensities, we can separate single microbes from regions where multiple microbes are stacked on top of each other. In other words, darker-to-brighter transitions in the histogram directly reflect whether particles are isolated or overlapping. This allows us to detect not only the presence of microbes, but also infer when one is sitting above another — which is critical in understanding real sample densities.",
       image: "https://res.cloudinary.com/dzgx1hfe6/image/upload/v1758109969/Hardware_Diagram_lkd5i8.jpg",
-      metrics: { accuracy: "N/A", speed: "Real-Time" },
+      metrics: { module: "Raspberry Pi 4B", io: "CSI/USB", speed: "Real-Time" },
+    },
+    {
+      id: 'hw-2',
+      name: "Pollaroid Approach",
+      description: "In this approach we use two polarizing filters to reveal features of phytoplankton that are invisible in normal light. The first polarizer is placed just before the light source, so all the light entering the sample is neatly aligned in one direction — this is called linearly polarized light. The second polarizer is placed above the sample, between the microscope objective and the camera, and rotated 90° relative to the first. In this configuration, without any sample in place, the image appears almost completely dark, since the two filters block each other out. However, many phytoplankton are birefringent — they change the polarization of light as it passes through them. This means that when these microbes are present, light leaks through the second polarizer and they appear as bright, colorful, and structured shapes against a dark background. For single phytoplankton, the birefringent pattern is clean and well-defined, depending on their orientation. But when microbes overlap, the light is scattered and depolarized, producing irregular bright blobs that don’t resemble the typical single-cell pattern. Technically, we can quantify this effect by analyzing how much the light deviates from pure linear polarization. For example, by rotating the analyzer (the second polarizer) at multiple angles and recording the intensity changes, we can measure these deviations and objectively detect overlaps. This gives us a robust way to distinguish between individual phytoplankton and regions where multiple organisms are stacked together..",
+      image: "https://res.cloudinary.com/dzgx1hfe6/image/upload/v1758109969/Hardware_Diagram_lkd5i8.jpg",
+      metrics: { module: "Raspberry Pi 4B", io: "CSI/USB", speed: "Real-Time" },
+    },
+    {
+      id: 'hw-3',
+      name: "IR Radiation Approach",
+      description: "Here we dedicate one camera to capturing a normal RGB image (the true-color view of the microbes), while the second camera is equipped with an infrared (IR) filter. By analyzing how the microbes interact with infrared light, we can compute depth information, since IR scattering and absorption patterns change depending on the thickness or overlap of organisms. In other words, the RGB camera gives us clear visual detail, while the IR camera adds a depth-sensitive layer of information. When the two are combined, we get both a high-quality color image and an accurate depth profile, which together make it possible to identify and separate overlapping microbes more reliably.",
+      image: "https://res.cloudinary.com/dzgx1hfe6/image/upload/v1758109969/Hardware_Diagram_lkd5i8.jpg",
+      metrics: { module: "Raspberry Pi 4B", io: "CSI/USB", speed: "Real-Time" },
+    },
+    {
+      id: 'hw-4',
+      name: "Stereo Camera Approach",
+      description: "In this method, we use a stereo camera module, which consists of two identical cameras placed side by side, along with a 10× microscope lens. Just like our two eyes give us depth perception, the two cameras capture slightly different views of the same sample. When combined, these views allow us to generate a depth map, which reveals not only the shape of the microbes but also their relative positions in three dimensions. This is especially important for overlapping phytoplankton, because we can now detect which one is on top and which is below, rather than seeing just a flat 2D image.",
+      image: "https://res.cloudinary.com/dzgx1hfe6/image/upload/v1758109969/Hardware_Diagram_lkd5i8.jpg",
+      metrics: { module: "Raspberry Pi 4B", io: "CSI/USB", speed: "Real-Time" },
     }
   ];
 
+  // Auto-scroll for each carousel separately
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentCard((prev) => (prev + 1) % approachCards.length);
+      setCurrentSoftware((prev) => (prev + 1) % softwareCards.length);
     }, 3000);
     return () => clearInterval(interval);
-  }, [approachCards.length]);
+  }, [softwareCards.length]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentHardware((prev) => (prev + 1) % hardwareCards.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [hardwareCards.length]);
 
   const handleCardClick = (card) => {
     setModalCard(card);
@@ -247,30 +310,30 @@ const Showcase = () => {
         transition={{ duration: 0.6 }}
         className="text-4xl font-bold text-white text-center mb-12"
       >
-        Approach
+        Software Approach
       </motion.h2>
 
       {/* Carousel Card */}
       <motion.div
-        key={approachCards[currentCard].id}
+        key={softwareCards[currentSoftware].id}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
         className="relative rounded-2xl overflow-hidden shadow-2xl cursor-pointer h-96 flex items-center justify-center"
         style={{ background: 'none' }}
-        onClick={() => handleCardClick(approachCards[currentCard])}
+        onClick={() => handleCardClick(softwareCards[currentSoftware])}
       >
         {/* Card Image with fallback */}
         <img
-          src={imgError[approachCards[currentCard].id] ? localImages[approachCards[currentCard].name] : approachCards[currentCard].image}
-          alt={approachCards[currentCard].name}
+          src={imgError[softwareCards[currentSoftware].id] ? localImages[softwareCards[currentSoftware].name] : softwareCards[currentSoftware].image}
+          alt={softwareCards[currentSoftware].name}
           className="absolute inset-0 w-full h-full object-cover"
-          onError={() => setImgError(prev => ({ ...prev, [approachCards[currentCard].id]: true }))}
+          onError={() => setImgError(prev => ({ ...prev, [softwareCards[currentSoftware].id]: true }))}
           style={{ zIndex: 1 }}
         />
         <div className="absolute inset-0 bg-black/40 z-10" />
         <h3 className="absolute bottom-0 left-0 right-0 text-3xl font-bold text-white p-6 bg-gradient-to-t from-black/70 to-transparent text-center z-20">
-          {approachCards[currentCard].name}
+          {softwareCards[currentSoftware].name}
         </h3>
       </motion.div>
 
@@ -295,7 +358,92 @@ const Showcase = () => {
             </div>
             <div className="p-8 overflow-y-auto h-3/5">
               <h2 className="text-3xl font-bold text-ocean-700 mb-4 text-center">{modalCard.name}</h2>
-              <p className="text-lg text-gray-700 mb-6 text-center">{modalCard.description}</p>
+              <div className="text-lg text-gray-700 mb-6 text-center space-y-4 max-w-4xl mx-auto">
+                {getParagraphs(modalCard.description).map((para, idx) => (
+                  <p key={idx}>{para}</p>
+                ))}
+              </div>
+              {modalCard.metrics && (
+                <div className="flex justify-center space-x-8">
+                  {Object.entries(modalCard.metrics).map(([key, value]) => (
+                    <div key={key} className="bg-ocean-100 rounded-lg px-4 py-2 text-ocean-700 font-semibold">
+                      {key.charAt(0).toUpperCase() + key.slice(1)}: {value}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <section
+    className="snap-start flex items-center justify-center px-4"
+    style={{ minHeight: 'calc(100vh - 60px)' }}
+  >
+    <div className="max-w-3xl mx-auto w-full relative">
+      <motion.h2
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="text-4xl font-bold text-white text-center mb-12"
+      >
+         Hardware Approach
+      </motion.h2>
+
+      {/* Carousel Card */}
+      <motion.div
+        key={hardwareCards[currentHardware].id}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className="relative rounded-2xl overflow-hidden shadow-2xl cursor-pointer h-96 flex items-center justify-center"
+        style={{ background: 'none' }}
+        onClick={() => handleCardClick(hardwareCards[currentHardware])}
+      >
+        {/* Card Image with fallback */}
+        <img
+          src={imgError[hardwareCards[currentHardware].id] ? localImages[hardwareCards[currentHardware].name] : hardwareCards[currentHardware].image}
+          alt={hardwareCards[currentHardware].name}
+          className="absolute inset-0 w-full h-full object-cover"
+          onError={() => setImgError(prev => ({ ...prev, [hardwareCards[currentHardware].id]: true }))}
+          style={{ zIndex: 1 }}
+        />
+        <div className="absolute inset-0 bg-black/40 z-10" />
+        <h3 className="absolute bottom-0 left-0 right-0 text-3xl font-bold text-white p-6 bg-gradient-to-t from-black/70 to-transparent text-center z-20">
+          {hardwareCards[currentHardware].name}
+        </h3>
+      </motion.div>
+
+      {/* Modal Popup */}
+      {showModal && modalCard && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden relative w-[85vw] h-[85vh] flex flex-col">
+            <button
+              className="absolute top-4 right-4 text-ocean-600 bg-white rounded-full p-2 shadow hover:bg-ocean-100 z-10"
+              onClick={closeModal}
+            >
+              &#10005;
+            </button>
+            <div className="w-full h-2/5 bg-gray-200 flex items-center justify-center">
+              <img
+                src={imgError[modalCard.id] ? localImages[modalCard.name] : modalCard.image}
+                alt={modalCard.name}
+                className="w-full h-full object-cover"
+                style={{ maxHeight: '100%', maxWidth: '100%' }}
+                onError={() => setImgError(prev => ({ ...prev, [modalCard.id]: true }))}
+              />
+            </div>
+            <div className="p-8 overflow-y-auto h-3/5">
+              <h2 className="text-3xl font-bold text-ocean-700 mb-4 text-center">{modalCard.name}</h2>
+              <div className="text-lg text-gray-700 mb-6 text-center space-y-4 max-w-4xl mx-auto">
+                {getParagraphs(modalCard.description).map((para, idx) => (
+                  <p key={idx}>{para}</p>
+                ))}
+              </div>
               {modalCard.metrics && (
                 <div className="flex justify-center space-x-8">
                   {Object.entries(modalCard.metrics).map(([key, value]) => (
