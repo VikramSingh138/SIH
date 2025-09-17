@@ -474,7 +474,7 @@ const Showcase = () => {
           url: "https://huggingface.co/datasets/TheDeepDas/Phytoplanktons-Enumeration-Without-Overlap/resolve/main/deep%20large%20dataset.zip"
         },
         {
-          name: "Pre-processed Dataset",
+          name: "Pre-processed Dataset without Overlap",
           description: "Dataset with preprocessing applied for faster training and evaluation.",
           size: "2.55 GB",
           url: "https://huggingface.co/datasets/TheDeepDas/Phytoplanktons-Enumeration-Without-Overlap/resolve/main/pre-processed%20dataset.zip"
@@ -510,10 +510,16 @@ const Showcase = () => {
           url: "https://huggingface.co/TheDeepDas/Phytoplankton-Models/blob/main/resnet18_regression.pth"
         },
         {
-          name: "Final Ensemble Model (Main)",
+          name: "Final Ensemble Model",
           description: "Final Ensemble Model for phytoplankton images.",
           size: "254 KB",
           url: "https://huggingface.co/TheDeepDas/Phytoplankton-Models/blob/main/phytoplankton_stacking_ensemble.pkl"
+        },
+        {
+          name: "Complete Pipeline Model",
+          description: "Complete Pipeline Model for phytoplankton images.",
+          size: "52.5 MB",
+          url: "https://huggingface.co/TheDeepDas/Phytoplankton-Models/blob/main/phytoplankton_full_pipeline.pkl"
         }
       ].map((file, index) => (
         <motion.div
