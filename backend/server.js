@@ -24,6 +24,42 @@ app.use(cors({
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
+// User cookie consent routes
+app.post('/api/users/accept', (req, res) => {
+  try {
+    const filePath = path.join(__dirname, 'data/userCount.json');
+    let data = { count: 0 };
+
+    if (fs.existsSync(filePath)) {
+      data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    }
+
+    data.count += 1;
+
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+
+    res.json({ success: true, count: data.count });
+  } catch (error) {
+    console.error('Error updating user count:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+app.get('/api/users/count', (req, res) => {
+  try {
+    const filePath = path.join(__dirname, 'data/userCount.json');
+    if (fs.existsSync(filePath)) {
+      const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      res.json({ count: data.count });
+    } else {
+      res.json({ count: 0 });
+    }
+  } catch (error) {
+    console.error('Error reading user count:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // Static file serving for downloads
 app.use('/downloads', express.static(path.join(__dirname, 'storage/downloads')))
 
