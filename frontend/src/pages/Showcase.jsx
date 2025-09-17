@@ -175,14 +175,17 @@ const Showcase = () => {
   const pipelineStages = [
     { name: 'Image Capture', description: 'Using advanced high-resolution microscopy techniques, raw marine samples are captured in fine detail.' },
     { name: 'Preprocessing', description: 'Captured images are enhanced through noise reduction, contrast adjustment, and normalization.' },
-    { name: 'AI Detection', description: 'Our deep learning models identify and classify organisms in real-time with high accuracy.' },
-    { name: 'Analysis', description: 'The processed results are compiled into detailed reports for research and conservation.' }
+    { name: 'Classification', description: 'Our deep learning model identifies and classifies organisms in real-time with high accuracy.' },
+    { name: 'Enumeration', description: 'Our deep learning model counts the number of phytoplanktons of each of the classes present.' }
   ]
 
   const impactMetrics = [
-    { label: 'Accuracy', value: '94.7%', icon: Target },
-    { label: 'Latency', value: '0.3s', icon: Clock },
-    { label: 'Power Usage', value: '2.1W', icon: Zap }
+    { label: 'F1 Score', value: '96.0%', icon: Target },
+    { label: 'Model Size', value: '46 KB', icon: Target },
+    { label: 'Frames Per Second', value: '27.3', icon: Target },
+    { label: 'Processing per sample', value: '2.197 ms', icon: Clock },
+    { label: 'Power Usage', value: '2.1W', icon: Zap },
+    { label: 'Improvement over state-of-the-art', value: '5x', icon: ExternalLink }
   ]
 
   return (

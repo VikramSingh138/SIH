@@ -1,157 +1,42 @@
 import React, { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Upload, 
-  Settings, 
-  MapPin, 
-  Calendar, 
-  Microscope, 
-  Sliders, 
-  Eye, 
-  Play,
-  ArrowLeft,
-  ArrowRight,
-  Download,
-  BarChart3
-} from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Upload, Play, Download, BarChart3, ImageIcon, RefreshCw } from 'lucide-react'
 import axios from 'axios'
 
 const Lab = () => {
-  const [currentStep, setCurrentStep] = useState(0)
-  const [formData, setFormData] = useState({
-    images: [],
-    magnification: '',
-    location: '',
-    date: '',
-    model: '',
-    confidence: 0.5,
-    nmsIou: 0.5
-  })
+  const [imageFile, setImageFile] = useState(null)
+  const [previewUrl, setPreviewUrl] = useState(null)
   const [results, setResults] = useState(null)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [error, setError] = useState(null)
 
-  const steps = [
-    {
-      id: 'upload',
-      title: 'Upload Images',
-      description: 'Select your microscopy images',
-      icon: Upload
-    },
-    {
-      id: 'magnification',
-      title: 'Set Magnification',
-      description: 'Choose the magnification level',
-      icon: Settings
-    },
-    {
-      id: 'metadata',
-      title: 'Add Metadata',
-      description: 'Location and date information',
-      icon: MapPin
-    },
-    {
-      id: 'model',
-      title: 'Select Model',
-      description: 'Choose AI model type',
-      icon: Microscope
-    },
-    {
-      id: 'thresholds',
-      title: 'Set Thresholds',
-      description: 'Configure detection parameters',
-      icon: Sliders
-    },
-    {
-      id: 'review',
-      title: 'Review & Submit',
-      description: 'Confirm your settings',
-      icon: Eye
-    }
-  ]
-
-  const magnificationOptions = ['10x', '20x', '40x', '100x', '400x', '1000x']
-  const modelOptions = [
-    { id: 'detector', name: 'Object Detector', description: 'Detect and locate organisms' },
-    { id: 'classifier', name: 'Species Classifier', description: 'Classify organism species' },
-    { id: 'counter', name: 'Population Counter', description: 'Count organism populations' }
-  ]
-
-  const handleNext = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1)
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setImageFile(file)
+      setPreviewUrl(URL.createObjectURL(file))
+      setResults(null)
+      setError(null)
     }
   }
 
-  const handlePrev = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1)
+  const runAnalysis = async () => {
+    if (!imageFile) return
+    setIsProcessing(true)
+    setError(null)
+    try {
+      const fd = new FormData()
+      fd.append('image', imageFile)
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/analyze`, fd, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      setResults(response.data)
+    } catch (err) {
+      console.error(err)
+      setError(err.response?.data?.error || 'Analysis failed')
+    } finally {
+      setIsProcessing(false)
     }
-  }
-
-  const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files)
-    setFormData({ ...formData, images: files })
-  }
-
-  // List of phytoplankton classes for random output
-  const phytoplanktonClasses = [
-    'Diatoms', 'Dinoflagellates', 'Cyanobacteria', 'Green Algae', 'Coccolithophores',
-    'Silicoflagellates', 'Cryptophytes', 'Chrysophytes', 'Euglenoids', 'Raphidophytes'
-  ];
-
-  // Generate random results for demo
-  const generateRandomResults = () => {
-    const numClasses = Math.floor(Math.random() * 4) + 3; // 3-6 classes
-    const selectedClasses = phytoplanktonClasses
-      .sort(() => 0.5 - Math.random())
-      .slice(0, numClasses);
-    const species = selectedClasses.map(name => ({
-      name,
-      count: Math.floor(Math.random() * 50) + 10 // 10-59
-    }));
-    const totalCount = species.reduce((sum, s) => sum + s.count, 0);
-    const processingTime = `${(Math.random() * 2 + 0.5).toFixed(2)} s`;
-    const avgConfidence = `${(Math.random() * 0.2 + 0.8).toFixed(2)}`;
-    return {
-      species,
-      totalCount,
-      processingTime,
-      avgConfidence,
-      csvDownload: '#'
-    };
-  };
-
-  const handleSubmit = async () => {
-    setIsProcessing(true);
-    setTimeout(() => {
-      setResults(generateRandomResults());
-      setIsProcessing(false);
-    }, 1200);
-    // Uncomment below for real backend call
-    // try {
-    //   const formDataToSend = new FormData()
-    //   formData.images.forEach(image => {
-    //     formDataToSend.append('images', image)
-    //   })
-    //   formDataToSend.append('metadata', JSON.stringify({
-    //     magnification: formData.magnification,
-    //     location: formData.location,
-    //     date: formData.date,
-    //     model: formData.model,
-    //     confidence: formData.confidence,
-    //     nmsIou: formData.nmsIou
-    //   }))
-    //   const response = await axios.post(
-    //     `${import.meta.env.VITE_BACKEND_URL}/api/predict`,
-    //     formDataToSend,
-    //     { headers: { 'Content-Type': 'multipart/form-data' } }
-    //   )
-    //   setResults(response.data)
-    // } catch (error) {
-    //   console.error('Error processing images:', error)
-    // } finally {
-    //   setIsProcessing(false)
-    // }
   }
 
   const renderStepContent = () => {
@@ -372,191 +257,127 @@ const Lab = () => {
     }
   }
 
-  if (results) {
+  const renderResults = () => {
+    if (!results) return null
+    const top = results.top || []
     return (
-      <div className="lab-gradient min-h-screen pt-20 px-4">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-12"
-          >
-            <BarChart3 className="h-16 w-16 text-neon-cyan mx-auto mb-4" />
-            <h1 className="text-4xl font-bold text-white mb-4">Analysis Results</h1>
-            <p className="text-gray-300">Your microscopy analysis is complete</p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 gap-8 mb-8">
-            <div className="neon-border rounded-xl p-6">
-              <h3 className="text-xl font-semibold text-neon-cyan mb-4">Species Detected</h3>
-              <div className="space-y-3">
-                {results.species.map((species, index) => (
-                  <div key={index} className="flex justify-between items-center">
-                    <span className="text-white">{species.name}</span>
-                    <span className="text-neon-cyan font-bold">{species.count}</span>
+      <div className="mt-12">
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-center mb-10">
+          <BarChart3 className="h-16 w-16 text-neon-cyan mx-auto mb-4" />
+          <h2 className="text-3xl font-bold text-white mb-2">Analysis Results</h2>
+          <p className="text-gray-300">Model inference completed in {results.timing}s</p>
+        </motion.div>
+        <div className="grid lg:grid-cols-3 gap-8">
+          <div className="neon-border rounded-xl p-6 col-span-2">
+            <h3 className="text-xl font-semibold text-neon-cyan mb-4">Top Classes</h3>
+            <div className="space-y-3 max-h-80 overflow-y-auto pr-2">
+              {top.map((item, idx) => (
+                <div key={idx} className="flex items-center justify-between bg-gray-800/40 rounded-lg px-4 py-3 hover:bg-gray-800/70 transition-colors duration-300">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-neon-cyan font-bold w-6 text-center">{idx + 1}</span>
+                    <span className="text-white font-medium">{item.class}</span>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="neon-border rounded-xl p-6">
-              <h3 className="text-xl font-semibold text-neon-cyan mb-4">Summary</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-300">Total Organisms:</span>
-                  <span className="text-white font-bold">{results.totalCount}</span>
+                  <span className="text-neon-cyan font-semibold">{item.value.toFixed ? item.value.toFixed(2) : item.value}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-300">Processing Time:</span>
-                  <span className="text-white font-bold">{results.processingTime}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-300">Confidence:</span>
-                  <span className="text-white font-bold">{results.avgConfidence}</span>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
-
-          <div className="text-center space-y-4">
-            <a
-              href={results.csvDownload}
-              className="inline-flex items-center px-6 py-3 bg-neon-cyan text-gray-900 font-semibold rounded-lg hover:bg-neon-cyan/90 transition-colors duration-300 mr-4"
-            >
-              <Download className="h-5 w-5 mr-2" />
-              Download CSV Report
-            </a>
-            <button
-              onClick={() => {
-                setResults(null)
-                setCurrentStep(0)
-                setFormData({
-                  images: [],
-                  magnification: '',
-                  location: '',
-                  date: '',
-                  model: '',
-                  confidence: 0.5,
-                  nmsIou: 0.5
-                })
-              }}
-              className="inline-flex items-center px-6 py-3 border border-neon-cyan text-neon-cyan font-semibold rounded-lg hover:bg-neon-cyan/10 transition-colors duration-300"
-            >
-              Run New Analysis
-            </button>
+          <div className="neon-border rounded-xl p-6">
+            <h3 className="text-xl font-semibold text-neon-cyan mb-4">Summary</h3>
+            <div className="space-y-4">
+              <div className="bg-gray-800/40 rounded-lg p-4">
+                <p className="text-gray-300 text-sm mb-1">ROI Count</p>
+                <p className="text-white text-2xl font-bold">{results.roi_count}</p>
+              </div>
+              <div className="bg-gray-800/40 rounded-lg p-4">
+                <p className="text-gray-300 text-sm mb-1">Classes Returned</p>
+                <p className="text-white text-2xl font-bold">{top.length}</p>
+              </div>
+              <div className="bg-gray-800/40 rounded-lg p-4">
+                <p className="text-gray-300 text-sm mb-1">Success</p>
+                <p className="text-neon-cyan text-2xl font-bold">{results.success ? 'Yes' : 'No'}</p>
+              </div>
+            </div>
           </div>
         </div>
+        {results.processed_image_base64 && (
+          <div className="neon-border rounded-xl p-6 mt-10">
+            <h3 className="text-xl font-semibold text-neon-cyan mb-4">Processed Image</h3>
+            <img src={`data:image/png;base64,${results.processed_image_base64}`} alt="Processed" className="w-full rounded-lg border border-gray-700" />
+          </div>
+        )}
       </div>
     )
   }
 
   return (
     <div className="lab-gradient min-h-screen pt-20 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-12"
-        >
+      <div className="max-w-5xl mx-auto">
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="text-center mb-12">
           <h1 className="text-4xl font-bold text-white mb-4">AI Analysis Lab</h1>
-          <p className="text-gray-300">Configure and run your microscopy analysis</p>
+          <p className="text-gray-300">Upload a microscopy image to run phytoplankton analysis</p>
         </motion.div>
 
-        {/* Progress Bar */}
-        <div className="mb-12">
-          <div className="flex items-center justify-between mb-4">
-            {steps.map((step, index) => (
-              <div
-                key={step.id}
-                className={`flex items-center ${index < steps.length - 1 ? 'flex-1' : ''}`}
-              >
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-                    index <= currentStep
-                      ? 'border-neon-cyan bg-neon-cyan text-gray-900'
-                      : 'border-gray-600 text-gray-400'
-                  }`}
-                >
-                  {index + 1}
-                </div>
-                {index < steps.length - 1 && (
-                  <div
-                    className={`flex-1 h-0.5 mx-4 ${
-                      index < currentStep ? 'bg-neon-cyan' : 'bg-gray-600'
-                    }`}
-                  />
+        <div className="grid lg:grid-cols-2 gap-10 items-start">
+          <div className="neon-border rounded-xl p-8 relative overflow-hidden">
+            <div className="absolute -top-20 -right-20 w-64 h-64 bg-neon-cyan/10 rounded-full blur-3xl" />
+            <div className="relative">
+              <h2 className="text-xl font-semibold text-neon-cyan mb-6 flex items-center"><Upload className="h-6 w-6 mr-2" /> Image Input</h2>
+              <div className="border-2 border-dashed border-neon-cyan/40 rounded-xl p-8 text-center hover:border-neon-cyan/70 transition-colors duration-300">
+                {previewUrl ? (
+                  <div className="space-y-4">
+                    <img src={previewUrl} alt="Preview" className="max-h-64 mx-auto rounded-lg shadow-lg border border-gray-700" />
+                    <button onClick={() => { setImageFile(null); setPreviewUrl(null); setResults(null); }} className="text-sm text-neon-cyan hover:underline flex items-center justify-center mx-auto">
+                      <RefreshCw className="h-4 w-4 mr-1" /> Choose Another Image
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <ImageIcon className="h-16 w-16 text-neon-cyan mx-auto mb-4" />
+                    <p className="text-gray-300 mb-4">Select a high-resolution microscopy image (JPG/PNG)</p>
+                    <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" id="image-input" />
+                    <label htmlFor="image-input" className="inline-flex items-center px-6 py-3 bg-neon-cyan text-gray-900 font-semibold rounded-lg hover:bg-neon-cyan/90 transition-colors duration-300 cursor-pointer">Choose Image</label>
+                  </>
                 )}
               </div>
-            ))}
+              <div className="mt-8 text-center">
+                <button onClick={runAnalysis} disabled={!imageFile || isProcessing} className="flex items-center justify-center w-full px-8 py-4 bg-neon-cyan text-gray-900 font-semibold rounded-lg hover:bg-neon-cyan/90 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed animate-glow">
+                  {isProcessing ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900 mr-3" /> Processing...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="h-5 w-5 mr-2" /> Run Analysis
+                    </>
+                  )}
+                </button>
+                {error && <p className="text-red-400 text-sm mt-3">{error}</p>}
+              </div>
+            </div>
           </div>
-          <div className="text-center">
-            <h2 className="text-xl font-semibold text-white mb-2">
-              {steps[currentStep].title}
-            </h2>
-            <p className="text-gray-300">{steps[currentStep].description}</p>
+          <div>
+            {renderResults() || (
+              <div className="neon-border rounded-xl p-8 h-full flex flex-col items-center justify-center text-center text-gray-400">
+                <BarChart3 className="h-20 w-20 text-gray-600 mb-6" />
+                <p className="text-lg">Results will appear here after running analysis.</p>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Step Content */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentStep}
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            transition={{ duration: 0.3 }}
-            className="neon-border rounded-xl p-8 mb-8"
-          >
-            {renderStepContent()}
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Navigation */}
-        <div className="flex justify-between items-center">
-          <button
-            onClick={handlePrev}
-            disabled={currentStep === 0}
-            className={`flex items-center px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${
-              currentStep === 0
-                ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                : 'bg-gray-700 text-white hover:bg-gray-600'
-            }`}
-          >
-            <ArrowLeft className="h-5 w-5 mr-2" />
-            Previous
-          </button>
-
-          {currentStep === steps.length - 1 ? (
-            <button
-              onClick={handleSubmit}
-              disabled={isProcessing || formData.images.length === 0}
-              className="flex items-center px-8 py-3 bg-neon-cyan text-gray-900 font-semibold rounded-lg hover:bg-neon-cyan/90 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed animate-glow"
-            >
-              {isProcessing ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900 mr-2"></div>
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <Play className="h-5 w-5 mr-2" />
-                  Run Analysis
-                </>
-              )}
+        {results && (
+          <div className="text-center mt-12">
+            <button onClick={() => { setResults(null); setImageFile(null); setPreviewUrl(null); }} className="inline-flex items-center px-6 py-3 border border-neon-cyan text-neon-cyan font-semibold rounded-lg hover:bg-neon-cyan/10 transition-colors duration-300">
+              <RefreshCw className="h-5 w-5 mr-2" /> New Analysis
             </button>
-          ) : (
-            <button
-              onClick={handleNext}
-              className="flex items-center px-6 py-3 bg-neon-cyan text-gray-900 font-semibold rounded-lg hover:bg-neon-cyan/90 transition-colors duration-300"
-            >
-              Next
-              <ArrowRight className="h-5 w-5 ml-2" />
-            </button>
-          )}
-        </div>
+            {results.success && (
+              <a href="#" className="inline-flex items-center px-6 py-3 bg-neon-cyan text-gray-900 font-semibold rounded-lg hover:bg-neon-cyan/90 transition-colors duration-300 ml-4">
+                <Download className="h-5 w-5 mr-2" /> Export JSON
+              </a>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
