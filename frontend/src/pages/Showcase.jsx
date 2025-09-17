@@ -111,7 +111,7 @@ const Showcase = () => {
       id: 4,
       name: "Hardware Integration",
       description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Hardware integration enables seamless connection between AI models and embedded marine microscopy systems for real-time analysis.",
-      image: "https://res.cloudinary.com/dzgx1hfe6/image/upload/v1757842934/hardware-img_cloudinary.png",
+      image: "https://res.cloudinary.com/dzgx1hfe6/image/upload/v1758109969/Hardware_Diagram_lkd5i8.jpg",
       metrics: { accuracy: "N/A", speed: "Real-Time" },
     }
   ];
@@ -137,37 +137,37 @@ const Showcase = () => {
     { 
       name: 'Deep', role: 'AI/ML Engineer',
       image: 'https://res.cloudinary.com/dzgx1hfe6/image/upload/v1757840536/deep-sih_jkbnxk.jpg',
-      linkedin: 'https://www.linkedin.com/in/deep-profile',
-      github: 'https://github.com/deep-profile'
+      linkedin: 'https://www.linkedin.com/in/deep-das-4b5aa527b/',
+      github: 'https://github.com/THE-DEEPDAS'
     },
     { 
       name: 'Bodhini', role: 'Computer Vision',
       image: 'https://res.cloudinary.com/dzgx1hfe6/image/upload/v1757840536/bodhini-sih_l9a57c.jpg',
-      linkedin: 'https://www.linkedin.com/in/bodhini-profile',
-      github: 'https://github.com/bodhini-profile'
+      linkedin: 'https://www.linkedin.com/in/bodhini-jain-6959322a6/',
+      github: 'https://github.com/pro-jain'
     },
     { 
       name: 'Swapna', role: 'Data Scientist',
       image: 'https://res.cloudinary.com/dzgx1hfe6/image/upload/v1757842334/swapna-sih_y7scyf.jpg',
-      linkedin: 'https://www.linkedin.com/in/swapna-profile',
-      github: 'https://github.com/swapna-profile'
+      linkedin: 'https://www.linkedin.com/in/swapna-kondapuram-630626292/',
+      github: 'https://github.com/swap0506'
     },
     { 
       name: 'Harsh', role: 'Backend Developer',
       image: 'https://res.cloudinary.com/dzgx1hfe6/image/upload/v1757841049/harsh-sih_neek4o.jpg',
-      linkedin: 'https://www.linkedin.com/in/harsh-profile',
+      linkedin: 'https://www.linkedin.com/in/harsh-bhadani-377792333/',
       github: 'https://github.com/harsh-profile'
     },
     { 
       name: 'Vikram', role: 'Frontend Developer',
       image: 'https://res.cloudinary.com/dzgx1hfe6/image/upload/v1757840974/vikram-sih_wdf9jf.jpg',
-      linkedin: 'https://www.linkedin.com/in/vikram-profile',
-      github: 'https://github.com/vikram-profile'
+      linkedin: 'https://www.linkedin.com/in/vikram-singh-mehrolia/',
+      github: 'https://github.com/VikramSingh138/'
     },
     { 
       name: 'Harshini', role: 'Research Lead',
       image: 'https://res.cloudinary.com/dzgx1hfe6/image/upload/v1757954052/harshini-sih_zrlqjh.jpg',
-      linkedin: 'https://www.linkedin.com/in/harshini-profile',
+      linkedin: 'https://www.linkedin.com/in/harshini-manchala-5b5634327/',
       github: 'https://github.com/harshini-profile'
     }
   ]
