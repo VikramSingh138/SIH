@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Microscope, Menu, X } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -13,8 +13,13 @@ const Navbar = () => {
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center space-x-2">
-            <Microscope className={`h-8 w-8 ${isLab ? 'text-neon-cyan' : 'text-white'}`} />
+          <Link to="/" className="flex items-center space-x-3" aria-label="Home">
+            {/* Brand Logo from public/medhavi.png */}
+            <img
+              src="/medhavi.png"
+              alt="Medhavi Logo"
+              className="h-16 w-16 rounded-md shadow-sm object-contain bg-white/0"
+            />
             <span className={`font-bold text-lg ${isLab ? 'text-neon-cyan' : 'text-white'}`}>
               Marine AI Microscopy
             </span>
