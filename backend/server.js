@@ -5,14 +5,12 @@ import dotenv from 'dotenv'
 import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
-import { spawn } from 'child_process'
 import { tryOnnxInference } from './inference/onnx_inference.js'
 // Environment variables used:
 //  - PORT: server port
 //  - CORS_ORIGINS: comma separated list of allowed origins
 //  - ENABLE_DEMO_MODE: if 'true', /api/predict returns synthetic results
-//  - PIPELINE_PATH: absolute or relative path to phytoplankton_full_pipeline.pkl for /api/analyze
-//  - PYTHON_BIN: python executable (default 'python') used to run inference script
+//  - Note: Python inference removed; ONNX-only path is used for /api/analyze
 
 // ES module compatibility
 const __filename = fileURLToPath(import.meta.url)
@@ -170,52 +168,18 @@ app.post('/api/predict', upload.array('images', 10), async (req, res) => {
   }
 })
 
-// New single-image analysis using Python full pipeline
+// New single-image analysis using ONNX runtime (Node-only)
 app.post('/api/analyze', upload.single('image'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'Image file is required (field name: image)' })
     }
-    const pipelinePath = process.env.PIPELINE_PATH || path.join(__dirname, 'models', 'phytoplankton_full_pipeline.pkl')
-    const forceOnnx = process.env.FORCE_ONNX === 'true'
-    const canUsePython = fs.existsSync(pipelinePath) && !forceOnnx
-
-    if (!canUsePython) {
-      const onnxResult = await tryOnnxInference(req.file.path)
-      if (!onnxResult.success) {
-        console.error('ONNX inference failed:', onnxResult)
-        return res.status(500).json({ error: 'ONNX inference failed', details: onnxResult.error, stack: onnxResult.stack, modelPathTried: onnxResult.modelPath })
-      }
-      return res.json({ ...onnxResult, runtime: 'onnx-node' })
+    const onnxResult = await tryOnnxInference(req.file.path)
+    if (!onnxResult.success) {
+      console.error('ONNX inference failed:', onnxResult)
+      return res.status(500).json({ error: 'ONNX inference failed', details: onnxResult.error, stack: onnxResult.stack, modelPathTried: onnxResult.modelPath })
     }
-
-    const pythonBin = process.env.PYTHON_BIN || 'python'
-    const scriptPath = path.join(__dirname, 'inference', 'run_pipeline.py')
-    if (!fs.existsSync(scriptPath)) {
-      return res.status(500).json({ error: 'Inference script missing on server' })
-    }
-
-    const args = [scriptPath, '--pipeline', pipelinePath, '--image', req.file.path, '--topk', '8', '--return-image']
-    const proc = spawn(pythonBin, args, { stdio: ['ignore', 'pipe', 'pipe'] })
-
-    let stdout = ''
-    let stderr = ''
-    proc.stdout.on('data', d => { stdout += d.toString() })
-    proc.stderr.on('data', d => { stderr += d.toString() })
-
-    proc.on('close', code => {
-      if (code !== 0) {
-        console.error('Python inference failed:', stderr)
-        return res.status(500).json({ error: 'Inference failed', details: stderr })
-      }
-      try {
-        const parsed = JSON.parse(stdout.trim().split('\n').pop())
-        res.json({ ...parsed, runtime: 'python' })
-      } catch (e) {
-        console.error('Failed to parse Python output:', e, stdout)
-        res.status(500).json({ error: 'Invalid inference output' })
-      }
-    })
+    return res.json({ ...onnxResult, runtime: 'onnx-node' })
   } catch (err) {
     console.error('Analyze route error:', err)
     res.status(500).json({ error: 'Server error during analysis' })
