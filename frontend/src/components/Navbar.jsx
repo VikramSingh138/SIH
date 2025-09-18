@@ -21,7 +21,7 @@ const Navbar = () => {
               className="h-16 w-16 rounded-md shadow-sm object-contain bg-white/0"
             />
             <span className={`font-bold text-lg ${isLab ? 'text-neon-cyan' : 'text-white'}`}>
-              Marine AI Microscopy
+              Medhavi
             </span>
           </Link>
 

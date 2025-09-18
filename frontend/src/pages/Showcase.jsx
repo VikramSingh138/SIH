@@ -713,7 +713,7 @@ const Showcase = () => {
   >
     <div className="flex items-center justify-center space-x-2 mb-4">
       <Waves className="h-6 w-6 text-white" />
-      <span className="text-white font-semibold">Marine AI Microscopy</span>
+      <span className="text-white font-semibold">Medhavi</span>
     </div>
     <p className="text-ocean-200 text-sm">
       Advancing marine biology research through intelligent microscopy systems
