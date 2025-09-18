@@ -171,20 +171,28 @@ const Showcase = () => {
     }
   ];
 
+  // Build slides: for each card, create an image slide and a text slide
+  const toSlides = (arr, prefix) => arr.flatMap(card => ([
+    { ...card, id: `${card.id}-img`, type: 'image' },
+    { ...card, id: `${card.id}-txt`, type: 'text' }
+  ]))
+  const softwareSlides = toSlides(softwareCards, 'sw')
+  const hardwareSlides = toSlides(hardwareCards, 'hw')
+
   // Auto-scroll for each carousel separately
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentSoftware((prev) => (prev + 1) % softwareCards.length);
+      setCurrentSoftware((prev) => (prev + 1) % softwareSlides.length);
     }, 3000);
     return () => clearInterval(interval);
-  }, [softwareCards.length]);
+  }, [softwareSlides.length]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentHardware((prev) => (prev + 1) % hardwareCards.length);
+      setCurrentHardware((prev) => (prev + 1) % hardwareSlides.length);
     }, 3000);
     return () => clearInterval(interval);
-  }, [hardwareCards.length]);
+  }, [hardwareSlides.length]);
 
   const handleCardClick = (card) => {
     setModalCard(card);
@@ -315,67 +323,39 @@ const Showcase = () => {
 
       {/* Carousel Card */}
       <motion.div
-        key={softwareCards[currentSoftware].id}
+        key={softwareSlides[currentSoftware].id}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
         className="relative rounded-2xl overflow-hidden shadow-2xl cursor-pointer h-96 flex items-center justify-center"
         style={{ background: 'none' }}
-        onClick={() => handleCardClick(softwareCards[currentSoftware])}
+        onClick={() => handleCardClick(softwareSlides[currentSoftware])}
       >
-        {/* Card Image with fallback */}
-        <img
-          src={imgError[softwareCards[currentSoftware].id] ? localImages[softwareCards[currentSoftware].name] : softwareCards[currentSoftware].image}
-          alt={softwareCards[currentSoftware].name}
-          className="absolute inset-0 w-full h-full object-cover"
-          onError={() => setImgError(prev => ({ ...prev, [softwareCards[currentSoftware].id]: true }))}
-          style={{ zIndex: 1 }}
-        />
-        <div className="absolute inset-0 bg-black/40 z-10" />
-        <h3 className="absolute bottom-0 left-0 right-0 text-3xl font-bold text-white p-6 bg-gradient-to-t from-black/70 to-transparent text-center z-20">
-          {softwareCards[currentSoftware].name}
-        </h3>
-      </motion.div>
-
-      {/* Modal Popup */}
-      {showModal && modalCard && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden relative w-[85vw] h-[85vh] flex flex-col">
-            <button
-              className="absolute top-4 right-4 text-ocean-600 bg-white rounded-full p-2 shadow hover:bg-ocean-100 z-10"
-              onClick={closeModal}
-            >
-              &#10005;
-            </button>
-            <div className="w-full h-2/5 bg-gray-200 flex items-center justify-center">
-              <img
-                src={imgError[modalCard.id] ? localImages[modalCard.name] : modalCard.image}
-                alt={modalCard.name}
-                className="w-full h-full object-cover"
-                style={{ maxHeight: '100%', maxWidth: '100%' }}
-                onError={() => setImgError(prev => ({ ...prev, [modalCard.id]: true }))}
-              />
-            </div>
-            <div className="p-8 overflow-y-auto h-3/5">
-              <h2 className="text-3xl font-bold text-ocean-700 mb-4 text-center">{modalCard.name}</h2>
-              <div className="text-lg text-gray-700 mb-6 text-center space-y-4 max-w-4xl mx-auto">
-                {getParagraphs(modalCard.description).map((para, idx) => (
-                  <p key={idx}>{para}</p>
-                ))}
-              </div>
-              {modalCard.metrics && (
-                <div className="flex justify-center space-x-8">
-                  {Object.entries(modalCard.metrics).map(([key, value]) => (
-                    <div key={key} className="bg-ocean-100 rounded-lg px-4 py-2 text-ocean-700 font-semibold">
-                      {key.charAt(0).toUpperCase() + key.slice(1)}: {value}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+        {softwareSlides[currentSoftware].type === 'image' ? (
+          <>
+            <img
+              src={imgError[softwareSlides[currentSoftware].id] ? localImages[softwareSlides[currentSoftware].name] : softwareSlides[currentSoftware].image}
+              alt={softwareSlides[currentSoftware].name}
+              className="absolute inset-0 w-full h-full object-cover"
+              onError={() => setImgError(prev => ({ ...prev, [softwareSlides[currentSoftware].id]: true }))}
+              style={{ zIndex: 1 }}
+            />
+            <div className="absolute inset-0 bg-black/40 z-10" />
+            <h3 className="absolute bottom-0 left-0 right-0 text-3xl font-bold text-white p-6 bg-gradient-to-t from-black/70 to-transparent text-center z-20">
+              {softwareSlides[currentSoftware].name} — Image
+            </h3>
+          </>
+        ) : (
+          <div className="absolute inset-0 p-6 flex flex-col justify-end bg-gradient-to-br from-ocean-700/80 to-ocean-900/80">
+            <h3 className="text-3xl font-bold text-white mb-3 text-center">{softwareSlides[currentSoftware].name}</h3>
+            <p className="text-ocean-100 text-sm text-center max-w-2xl mx-auto">
+              {getParagraphs(softwareSlides[currentSoftware].description)[0]}
+            </p>
+            <div className="text-center mt-3 text-ocean-200 text-xs">Tap to read more</div>
           </div>
-        </div>
-      )}
+        )}
+      </motion.div>
+      {/* Modal handled globally below */}
     </div>
   </section>
 
@@ -396,69 +376,83 @@ const Showcase = () => {
 
       {/* Carousel Card */}
       <motion.div
-        key={hardwareCards[currentHardware].id}
+        key={hardwareSlides[currentHardware].id}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
         className="relative rounded-2xl overflow-hidden shadow-2xl cursor-pointer h-96 flex items-center justify-center"
         style={{ background: 'none' }}
-        onClick={() => handleCardClick(hardwareCards[currentHardware])}
+        onClick={() => handleCardClick(hardwareSlides[currentHardware])}
       >
-        {/* Card Image with fallback */}
-        <img
-          src={imgError[hardwareCards[currentHardware].id] ? localImages[hardwareCards[currentHardware].name] : hardwareCards[currentHardware].image}
-          alt={hardwareCards[currentHardware].name}
-          className="absolute inset-0 w-full h-full object-cover"
-          onError={() => setImgError(prev => ({ ...prev, [hardwareCards[currentHardware].id]: true }))}
-          style={{ zIndex: 1 }}
-        />
-        <div className="absolute inset-0 bg-black/40 z-10" />
-        <h3 className="absolute bottom-0 left-0 right-0 text-3xl font-bold text-white p-6 bg-gradient-to-t from-black/70 to-transparent text-center z-20">
-          {hardwareCards[currentHardware].name}
-        </h3>
-      </motion.div>
-
-      {/* Modal Popup */}
-      {showModal && modalCard && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden relative w-[85vw] h-[85vh] flex flex-col">
-            <button
-              className="absolute top-4 right-4 text-ocean-600 bg-white rounded-full p-2 shadow hover:bg-ocean-100 z-10"
-              onClick={closeModal}
-            >
-              &#10005;
-            </button>
-            <div className="w-full h-2/5 bg-gray-200 flex items-center justify-center">
-              <img
-                src={imgError[modalCard.id] ? localImages[modalCard.name] : modalCard.image}
-                alt={modalCard.name}
-                className="w-full h-full object-cover"
-                style={{ maxHeight: '100%', maxWidth: '100%' }}
-                onError={() => setImgError(prev => ({ ...prev, [modalCard.id]: true }))}
-              />
-            </div>
-            <div className="p-8 overflow-y-auto h-3/5">
-              <h2 className="text-3xl font-bold text-ocean-700 mb-4 text-center">{modalCard.name}</h2>
-              <div className="text-lg text-gray-700 mb-6 text-center space-y-4 max-w-4xl mx-auto">
-                {getParagraphs(modalCard.description).map((para, idx) => (
-                  <p key={idx}>{para}</p>
-                ))}
-              </div>
-              {modalCard.metrics && (
-                <div className="flex justify-center space-x-8">
-                  {Object.entries(modalCard.metrics).map(([key, value]) => (
-                    <div key={key} className="bg-ocean-100 rounded-lg px-4 py-2 text-ocean-700 font-semibold">
-                      {key.charAt(0).toUpperCase() + key.slice(1)}: {value}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+        {hardwareSlides[currentHardware].type === 'image' ? (
+          <>
+            <img
+              src={imgError[hardwareSlides[currentHardware].id] ? localImages[hardwareSlides[currentHardware].name] : hardwareSlides[currentHardware].image}
+              alt={hardwareSlides[currentHardware].name}
+              className="absolute inset-0 w-full h-full object-cover"
+              onError={() => setImgError(prev => ({ ...prev, [hardwareSlides[currentHardware].id]: true }))}
+              style={{ zIndex: 1 }}
+            />
+            <div className="absolute inset-0 bg-black/40 z-10" />
+            <h3 className="absolute bottom-0 left-0 right-0 text-3xl font-bold text-white p-6 bg-gradient-to-t from-black/70 to-transparent text-center z-20">
+              {hardwareSlides[currentHardware].name} — Image
+            </h3>
+          </>
+        ) : (
+          <div className="absolute inset-0 p-6 flex flex-col justify-end bg-gradient-to-br from-ocean-700/80 to-ocean-900/80">
+            <h3 className="text-3xl font-bold text-white mb-3 text-center">{hardwareSlides[currentHardware].name}</h3>
+            <p className="text-ocean-100 text-sm text-center max-w-2xl mx-auto">
+              {getParagraphs(hardwareSlides[currentHardware].description)[0]}
+            </p>
+            <div className="text-center mt-3 text-ocean-200 text-xs">Tap to read more</div>
           </div>
-        </div>
-      )}
+        )}
+      </motion.div>
+      {/* Modal handled globally below */}
     </div>
   </section>
+
+  {/* Unified Modal Popup for both carousels */}
+  {showModal && modalCard && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+      <div className="bg-white rounded-2xl shadow-2xl overflow-hidden relative w-[85vw] h-[85vh] flex flex-col">
+        <button
+          className="absolute top-4 right-4 text-ocean-600 bg-white rounded-full p-2 shadow hover:bg-ocean-100 z-10"
+          onClick={closeModal}
+        >
+          &#10005;
+        </button>
+        {modalCard.type === 'image' ? (
+          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+            <img
+              src={imgError[modalCard.id] ? localImages[modalCard.name] : modalCard.image}
+              alt={modalCard.name}
+              className="max-w-full max-h-full object-contain"
+              onError={() => setImgError(prev => ({ ...prev, [modalCard.id]: true }))}
+            />
+          </div>
+        ) : (
+          <div className="p-8 overflow-y-auto h-full">
+            <h2 className="text-3xl font-bold text-ocean-700 mb-4 text-center">{modalCard.name}</h2>
+            <div className="text-lg text-gray-700 mb-6 text-center space-y-4 max-w-4xl mx-auto">
+              {getParagraphs(modalCard.description).map((para, idx) => (
+                <p key={idx}>{para}</p>
+              ))}
+            </div>
+            {modalCard.metrics && (
+              <div className="flex justify-center flex-wrap gap-3">
+                {Object.entries(modalCard.metrics).map(([key, value]) => (
+                  <div key={key} className="bg-ocean-100 rounded-lg px-4 py-2 text-ocean-700 font-semibold">
+                    {key.charAt(0).toUpperCase() + key.slice(1)}: {value}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )}
 
   {/* Pipeline Section */}
   <section
