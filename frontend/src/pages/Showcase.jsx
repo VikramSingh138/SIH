@@ -55,6 +55,7 @@ const Showcase = () => {
   const [currentHardware, setCurrentHardware] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [modalCard, setModalCard] = useState(null);
+  const [bomData, setBomData] = useState([]);
 
   // Helper: split a long description into up to 3 readable paragraphs
   const getParagraphs = (text, maxParagraphs = 3) => {
@@ -171,13 +172,14 @@ const Showcase = () => {
     }
   ];
 
-  // Build slides: for each card, create an image slide and a text slide
-  const toSlides = (arr, prefix) => arr.flatMap(card => ([
-    { ...card, id: `${card.id}-img`, type: 'image' },
-    { ...card, id: `${card.id}-txt`, type: 'text' }
-  ]))
-  const softwareSlides = toSlides(softwareCards, 'sw')
-  const hardwareSlides = toSlides(hardwareCards, 'hw')
+  // Build slides: TEXT ONLY (images removed from approach sections)
+  const toSlides = (arr) => arr.map(card => ({
+    ...card,
+    id: `${card.id}-txt`,
+    type: 'text'
+  }))
+  const softwareSlides = toSlides(softwareCards)
+  const hardwareSlides = toSlides(hardwareCards)
 
   // Auto-scroll for each carousel separately
   useEffect(() => {
@@ -259,6 +261,20 @@ const Showcase = () => {
     { label: 'Improvement over state-of-the-art', value: '5x', icon: ExternalLink }
   ]
 
+  // Fallback BOM (used if XLSX parsing fails)
+  const fallbackBOM = [
+    { sr: 1, component: 'Single-board Computer', specs: 'Raspberry Pi 4 Model B (4GB)', cost: '₹4,639', link: 'https://shorturl.at/UrdgZ' },
+    { sr: 2, component: 'Camera Module', specs: 'Raspberry Pi High Quality Camera (C/CS mount)', cost: '₹5,301', link: 'https://shorturl.at/E12LL' },
+    { sr: 3, component: 'Lens (per camera)', specs: '100X Industrial Microscope Lens, C/CS-Mount', cost: '₹1,319', link: 'https://shorturl.at/Y4ptQ' },
+    { sr: 4, component: 'Mount / Box for whole apparatus', specs: 'Custom 3D Printed', cost: '₹2,500', link: 'https://shorturl.at/VaZu9' },
+    { sr: 5, component: 'Illumination - Transmitted (Darkfield)', specs: 'Slim LED Transmitted Backlight Panel (Darkfield)', cost: '₹90', link: 'https://shorturl.at/rt74Z' },
+    { sr: 6, component: 'Illumination - Incident (ring)', specs: 'LED Ring Light for microscope / C-mount (60/72 LED)', cost: '₹529', link: 'https://tinyurl.com/58d75pu8' },
+    { sr: 7, component: 'Power Supply', specs: 'Official Raspberry Pi 5V 3A USB-C PSU', cost: '₹673', link: 'https://tinyurl.com/4mnspr3z' },
+    { sr: 8, component: 'microSD Card', specs: 'microSD Card 32GB UHS-I (for OS and storage)', cost: '₹399', link: 'https://tinyurl.com/5a492nbn' },
+    { sr: 9, component: 'Slide', specs: 'Glass slide to keep the sample', cost: '₹5', link: 'https://tinyurl.com/3z43jbkr' },
+    { sr: 10, component: 'Cables & Accessories', specs: 'Camera ribbon cable (+ included) & HDMI/USB/Wi-Fi etc.', cost: '₹500 (approx)', link: 'https://s1nk.com/SvNaD' },
+  ];
+
   return (
 <div className="ocean-gradient h-screen overflow-y-scroll snap-y snap-mandatory scrollbar-hide">
       {/* Hero Section */}
@@ -305,6 +321,121 @@ const Showcase = () => {
     </div>
   </section>
 
+  {/* New: Hardware Workflow + Model Architecture Images */}
+  <section
+    className="snap-start flex items-center justify-center px-4 bg-white/5 backdrop-blur-sm"
+    style={{ minHeight: 'calc(100vh - 60px)' }}
+  >
+    <div className="max-w-7xl mx-auto w-full">
+      <motion.h2
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="text-4xl font-bold text-white text-center mb-12"
+      >
+        Hardware Workflow & Model Architecture
+      </motion.h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="glass-effect rounded-xl overflow-hidden p-4 h-96"
+        >
+          <img
+            src="/hardware_workflow.jpg"
+            alt="Hardware Workflow"
+            className="w-full h-full object-contain"
+          />
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="glass-effect rounded-xl overflow-hidden p-4 h-96"
+        >
+          <img
+            src="/model.png"
+            alt="Model Architecture"
+            className="w-full h-full object-contain"
+          />
+        </motion.div>
+      </div>
+    </div>
+  </section>
+
+  {/* Bill of Materials Section */}
+  <section
+    className="snap-start flex items-center justify-center px-4 pt-20"
+    style={{ minHeight: 'calc(100vh - 60px)' }}
+  >
+    <div className="max-w-7xl mx-auto w-full">
+      <motion.h2
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="text-4xl font-bold text-white text-center mb-12 mt-8"
+      >
+        Bill of Materials
+      </motion.h2>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="glass-effect rounded-xl p-8"
+      >
+        <div className="text-center mb-8">
+          <p className="text-ocean-100 text-lg mb-6">
+            Complete component breakdown and cost analysis for the hardware implementation
+          </p>
+          <a
+            href="/BOM_SIH_2025.xlsx"
+            download
+            className="inline-flex items-center px-6 py-3 bg-ocean-500 hover:bg-ocean-400 text-white font-semibold rounded-lg transition-colors duration-300"
+          >
+            <Download className="h-5 w-5 mr-2" />
+            Download BOM Excel
+          </a>
+        </div>
+        
+        {/* Sample BOM preview table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-white">
+            <thead>
+              <tr className="border-b border-ocean-400">
+                <th className="py-3 px-4 text-ocean-200">Sr</th>
+                <th className="py-3 px-4 text-ocean-200">Component</th>
+                <th className="py-3 px-4 text-ocean-200">Specs</th>
+                <th className="py-3 px-4 text-ocean-200">Cost</th>
+                <th className="py-3 px-4 text-ocean-200">Link</th>
+              </tr>
+            </thead>
+            <tbody>
+              {fallbackBOM.map((item, index) => (
+                <tr key={index} className="border-b border-ocean-600/50">
+                  <td className="py-3 px-4">{item.sr}</td>
+                  <td className="py-3 px-4">{item.component}</td>
+                  <td className="py-3 px-4">{item.specs}</td>
+                  <td className="py-3 px-4">{item.cost}</td>
+                  <td className="py-3 px-4">
+                    <a href={item.link} target="_blank" rel="noopener noreferrer" className="text-ocean-300 hover:text-ocean-100 underline">
+                      Link
+                    </a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </motion.div>
+    </div>
+  </section>
+
   {/* Approach Section (Carousel) */}
   <section
     className="snap-start flex items-center justify-center px-4"
@@ -321,39 +452,23 @@ const Showcase = () => {
         Software Approach
       </motion.h2>
 
-      {/* Carousel Card */}
+      {/* Carousel Card (text-only, full content area) */}
       <motion.div
         key={softwareSlides[currentSoftware].id}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="relative rounded-2xl overflow-hidden shadow-2xl cursor-pointer h-96 flex items-center justify-center"
+        className="relative rounded-2xl overflow-hidden shadow-2xl cursor-pointer h-96"
         style={{ background: 'none' }}
         onClick={() => handleCardClick(softwareSlides[currentSoftware])}
       >
-        {softwareSlides[currentSoftware].type === 'image' ? (
-          <>
-            <img
-              src={imgError[softwareSlides[currentSoftware].id] ? localImages[softwareSlides[currentSoftware].name] : softwareSlides[currentSoftware].image}
-              alt={softwareSlides[currentSoftware].name}
-              className="absolute inset-0 w-full h-full object-cover"
-              onError={() => setImgError(prev => ({ ...prev, [softwareSlides[currentSoftware].id]: true }))}
-              style={{ zIndex: 1 }}
-            />
-            <div className="absolute inset-0 bg-black/40 z-10" />
-            <h3 className="absolute bottom-0 left-0 right-0 text-3xl font-bold text-white p-6 bg-gradient-to-t from-black/70 to-transparent text-center z-20">
-              {softwareSlides[currentSoftware].name} — Image
-            </h3>
-          </>
-        ) : (
-          <div className="absolute inset-0 p-6 flex flex-col justify-end bg-gradient-to-br from-ocean-700/80 to-ocean-900/80">
-            <h3 className="text-3xl font-bold text-white mb-3 text-center">{softwareSlides[currentSoftware].name}</h3>
-            <p className="text-ocean-100 text-sm text-center max-w-2xl mx-auto">
-              {getParagraphs(softwareSlides[currentSoftware].description)[0]}
-            </p>
-            <div className="text-center mt-3 text-ocean-200 text-xs">Tap to read more</div>
-          </div>
-        )}
+        <div className="w-full h-full p-8 flex flex-col items-center justify-center text-center bg-gradient-to-br from-ocean-700/80 to-ocean-900/80">
+          <h3 className="text-3xl font-bold text-white mb-4">{softwareSlides[currentSoftware].name}</h3>
+          <p className="text-ocean-100 text-base max-w-2xl">
+            {getParagraphs(softwareSlides[currentSoftware].description)[0]}
+          </p>
+          <div className="mt-4 text-ocean-200 text-xs">Tap to read more</div>
+        </div>
       </motion.div>
       {/* Modal handled globally below */}
     </div>
@@ -374,45 +489,29 @@ const Showcase = () => {
          Hardware Approach
       </motion.h2>
 
-      {/* Carousel Card */}
+      {/* Carousel Card (text-only, full content area) */}
       <motion.div
         key={hardwareSlides[currentHardware].id}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="relative rounded-2xl overflow-hidden shadow-2xl cursor-pointer h-96 flex items-center justify-center"
+        className="relative rounded-2xl overflow-hidden shadow-2xl cursor-pointer h-96"
         style={{ background: 'none' }}
         onClick={() => handleCardClick(hardwareSlides[currentHardware])}
       >
-        {hardwareSlides[currentHardware].type === 'image' ? (
-          <>
-            <img
-              src={imgError[hardwareSlides[currentHardware].id] ? localImages[hardwareSlides[currentHardware].name] : hardwareSlides[currentHardware].image}
-              alt={hardwareSlides[currentHardware].name}
-              className="absolute inset-0 w-full h-full object-cover"
-              onError={() => setImgError(prev => ({ ...prev, [hardwareSlides[currentHardware].id]: true }))}
-              style={{ zIndex: 1 }}
-            />
-            <div className="absolute inset-0 bg-black/40 z-10" />
-            <h3 className="absolute bottom-0 left-0 right-0 text-3xl font-bold text-white p-6 bg-gradient-to-t from-black/70 to-transparent text-center z-20">
-              {hardwareSlides[currentHardware].name} — Image
-            </h3>
-          </>
-        ) : (
-          <div className="absolute inset-0 p-6 flex flex-col justify-end bg-gradient-to-br from-ocean-700/80 to-ocean-900/80">
-            <h3 className="text-3xl font-bold text-white mb-3 text-center">{hardwareSlides[currentHardware].name}</h3>
-            <p className="text-ocean-100 text-sm text-center max-w-2xl mx-auto">
-              {getParagraphs(hardwareSlides[currentHardware].description)[0]}
-            </p>
-            <div className="text-center mt-3 text-ocean-200 text-xs">Tap to read more</div>
-          </div>
-        )}
+        <div className="w-full h-full p-8 flex flex-col items-center justify-center text-center bg-gradient-to-br from-ocean-700/80 to-ocean-900/80">
+          <h3 className="text-3xl font-bold text-white mb-4">{hardwareSlides[currentHardware].name}</h3>
+          <p className="text-ocean-100 text-base max-w-2xl">
+            {getParagraphs(hardwareSlides[currentHardware].description)[0]}
+          </p>
+          <div className="mt-4 text-ocean-200 text-xs">Tap to read more</div>
+        </div>
       </motion.div>
       {/* Modal handled globally below */}
     </div>
   </section>
 
-  {/* Unified Modal Popup for both carousels */}
+  {/* Unified Modal Popup for both carousels (text-only) */}
   {showModal && modalCard && (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
       <div className="bg-white rounded-2xl shadow-2xl overflow-hidden relative w-[85vw] h-[85vh] flex flex-col">
@@ -422,34 +521,23 @@ const Showcase = () => {
         >
           &#10005;
         </button>
-        {modalCard.type === 'image' ? (
-          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-            <img
-              src={imgError[modalCard.id] ? localImages[modalCard.name] : modalCard.image}
-              alt={modalCard.name}
-              className="max-w-full max-h-full object-contain"
-              onError={() => setImgError(prev => ({ ...prev, [modalCard.id]: true }))}
-            />
+        <div className="p-8 overflow-y-auto h-full">
+          <h2 className="text-3xl font-bold text-ocean-700 mb-4 text-center">{modalCard.name}</h2>
+          <div className="text-lg text-gray-700 mb-6 text-center space-y-4 max-w-4xl mx-auto">
+            {getParagraphs(modalCard.description).map((para, idx) => (
+              <p key={idx}>{para}</p>
+            ))}
           </div>
-        ) : (
-          <div className="p-8 overflow-y-auto h-full">
-            <h2 className="text-3xl font-bold text-ocean-700 mb-4 text-center">{modalCard.name}</h2>
-            <div className="text-lg text-gray-700 mb-6 text-center space-y-4 max-w-4xl mx-auto">
-              {getParagraphs(modalCard.description).map((para, idx) => (
-                <p key={idx}>{para}</p>
+          {modalCard.metrics && (
+            <div className="flex justify-center flex-wrap gap-3">
+              {Object.entries(modalCard.metrics).map(([key, value]) => (
+                <div key={key} className="bg-ocean-100 rounded-lg px-4 py-2 text-ocean-700 font-semibold">
+                  {key.charAt(0).toUpperCase() + key.slice(1)}: {value}
+                </div>
               ))}
             </div>
-            {modalCard.metrics && (
-              <div className="flex justify-center flex-wrap gap-3">
-                {Object.entries(modalCard.metrics).map(([key, value]) => (
-                  <div key={key} className="bg-ocean-100 rounded-lg px-4 py-2 text-ocean-700 font-semibold">
-                    {key.charAt(0).toUpperCase() + key.slice(1)}: {value}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   )}
