@@ -208,7 +208,7 @@ const Showcase = () => {
 
   const teamMembers = [
     { 
-      name: 'Deep', role: 'AI/ML Engineer',
+      name: 'Deep', role: 'Data Scientist',
       image: 'https://res.cloudinary.com/dzgx1hfe6/image/upload/v1757840536/deep-sih_jkbnxk.jpg',
       linkedin: 'https://www.linkedin.com/in/deep-das-4b5aa527b/',
       github: 'https://github.com/THE-DEEPDAS'
@@ -220,25 +220,25 @@ const Showcase = () => {
       github: 'https://github.com/pro-jain'
     },
     { 
-      name: 'Swapna', role: 'Data Scientist',
+      name: 'Swapna', role: 'ML Lead',
       image: 'https://res.cloudinary.com/dzgx1hfe6/image/upload/v1757842334/swapna-sih_y7scyf.jpg',
       linkedin: 'https://www.linkedin.com/in/swapna-kondapuram-630626292/',
       github: 'https://github.com/swap0506'
     },
     { 
-      name: 'Harsh', role: 'Backend Developer',
+      name: 'Harsh', role: 'Hardware Lead',
       image: 'https://res.cloudinary.com/dzgx1hfe6/image/upload/v1757841049/harsh-sih_neek4o.jpg',
       linkedin: 'https://www.linkedin.com/in/harsh-bhadani-377792333/',
       github: 'https://github.com/harsh-profile'
     },
     { 
-      name: 'Vikram', role: 'Frontend Developer',
+      name: 'Vikram', role: 'Web Developer',
       image: 'https://res.cloudinary.com/dzgx1hfe6/image/upload/v1757840974/vikram-sih_wdf9jf.jpg',
       linkedin: 'https://www.linkedin.com/in/vikram-singh-mehrolia/',
       github: 'https://github.com/VikramSingh138/'
     },
     { 
-      name: 'Harshini', role: 'Research Lead',
+      name: 'Harshini', role: 'ML Lead',
       image: 'https://res.cloudinary.com/dzgx1hfe6/image/upload/v1757954052/harshini-sih_zrlqjh.jpg',
       linkedin: 'https://www.linkedin.com/in/harshini-manchala-5b5634327/',
       github: 'https://github.com/harshini-profile'
