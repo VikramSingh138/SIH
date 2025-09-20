@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { 
@@ -56,6 +56,15 @@ const Showcase = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalCard, setModalCard] = useState(null);
   const [bomData, setBomData] = useState([]);
+  // Lightbox state
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxSrc, setLightboxSrc] = useState(null)
+  // zoom defaults: three '-' presses -> 1 - 3*0.2 = 0.4
+  const MIN_ZOOM = 0.25
+  const MAX_ZOOM = 4
+  const DEFAULT_ZOOM = 0.5
+  const [zoom, setZoom] = useState(DEFAULT_ZOOM)
+  const lightboxRef = useRef(null)
 
   // Helper: split a long description into up to 3 readable paragraphs
   const getParagraphs = (text, maxParagraphs = 3) => {
@@ -206,6 +215,30 @@ const Showcase = () => {
     setModalCard(null);
   };
 
+  const openLightbox = (src) => {
+    setLightboxSrc(src)
+    setZoom(DEFAULT_ZOOM)
+    setLightboxOpen(true)
+  }
+
+  const closeLightbox = () => {
+    setLightboxOpen(false)
+    setLightboxSrc(null)
+    setZoom(1)
+  }
+
+  // Zoom handlers
+  const onWheelZoom = (e) => {
+    e.preventDefault()
+    const delta = -e.deltaY || e.wheelDelta
+    const factor = delta > 0 ? 0.1 : -0.1
+    setZoom((z) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, +(z + factor).toFixed(2))))
+  }
+
+  const zoomIn = () => setZoom((z) => Math.min(MAX_ZOOM, +(z + 0.2).toFixed(2)))
+  const zoomOut = () => setZoom((z) => Math.max(MIN_ZOOM, +(z - 0.2).toFixed(2)))
+  const resetZoom = () => setZoom(DEFAULT_ZOOM)
+
   const teamMembers = [
     { 
       name: 'Deep', role: 'Data Scientist',
@@ -304,7 +337,7 @@ const Showcase = () => {
         >
           Run Model <ArrowRight className="ml-2 h-5 w-5" />
         </Link>
-      </motion.div>
+        </motion.div>
 
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
@@ -344,11 +377,13 @@ const Showcase = () => {
           transition={{ duration: 0.6 }}
           className="glass-effect rounded-xl overflow-hidden p-4 h-96"
         >
-          <img
-            src="/hardware_workflow.jpg"
-            alt="Hardware Workflow"
-            className="w-full h-full object-contain"
-          />
+          <button className="w-full h-full p-0 m-0 block" onClick={() => openLightbox('/hardware_workflow.jpg')}>
+            <img
+              src="/hardware_workflow.jpg"
+              alt="Hardware Workflow"
+              className="w-full h-full object-contain"
+            />
+          </button>
         </motion.div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -357,15 +392,40 @@ const Showcase = () => {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="glass-effect rounded-xl overflow-hidden p-4 h-96"
         >
-          <img
-            src="/model.png"
-            alt="Model Architecture"
-            className="w-full h-full object-contain"
-          />
+          <button className="w-full h-full p-0 m-0 block" onClick={() => openLightbox('/model.png')}>
+            <img
+              src="/model.png"
+              alt="Model Architecture"
+              className="w-full h-full object-contain"
+            />
+          </button>
         </motion.div>
       </div>
     </div>
   </section>
+
+  {/* Lightbox Modal for images */}
+  {lightboxOpen && (
+    <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/70" onClick={closeLightbox}>
+      <div className="relative" style={{ width: '80vw', height: '80vh' }} onClick={(e) => e.stopPropagation()} ref={lightboxRef} onWheel={onWheelZoom}>
+        <button onClick={closeLightbox} className="absolute top-3 right-3 z-30 bg-white/90 text-slate-900 rounded-full p-2">✕</button>
+        <div className="absolute top-3 left-3 z-30 flex space-x-2">
+          <button onClick={zoomOut} className="bg-white/90 text-slate-900 rounded-full p-2">−</button>
+          <button onClick={resetZoom} className="bg-white/90 text-slate-900 rounded-full p-2">Reset</button>
+          <button onClick={zoomIn} className="bg-white/90 text-slate-900 rounded-full p-2">+</button>
+        </div>
+        <div className="w-full h-full flex items-center justify-center overflow-hidden bg-black rounded">
+          <img
+            src={lightboxSrc}
+            alt="preview"
+            style={{ transform: `scale(${zoom})`, transition: 'transform 120ms ease-out', maxWidth: 'none' }}
+            className="select-none pointer-events-none"
+            onDoubleClick={resetZoom}
+          />
+        </div>
+      </div>
+    </div>
+  )}
 
   {/* Bill of Materials Section */}
   <section
