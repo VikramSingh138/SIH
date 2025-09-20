@@ -357,7 +357,7 @@ const Showcase = () => {
   {/* New: Hardware Workflow + Model Architecture Images */}
   <section
     className="snap-start flex items-center justify-center px-4 bg-white/5 backdrop-blur-sm"
-    style={{ minHeight: 'calc(100vh - 60px)' }}
+    style={{ minHeight: 'calc(100vh - 60px)', paddingTop: 'calc(var(--navbar-height) + 2rem)' }}
   >
     <div className="max-w-7xl mx-auto w-full">
       <motion.h2
@@ -499,7 +499,7 @@ const Showcase = () => {
   {/* Approach Section (Carousel) */}
   <section
     className="snap-start flex items-center justify-center px-4"
-    style={{ minHeight: 'calc(100vh - 60px)' }}
+    style={{ minHeight: 'calc(100vh - 60px)', paddingTop: 'calc(var(--navbar-height) + 2rem)' }}
   >
     <div className="max-w-3xl mx-auto w-full relative">
       <motion.h2
@@ -652,7 +652,7 @@ const Showcase = () => {
   {/* Performance Metrics */}
   <section
     className="snap-start flex items-center justify-center px-4 bg-white/5 backdrop-blur-sm"
-    style={{ minHeight: 'calc(100vh - 60px)' }}
+    style={{ minHeight: 'calc(100vh - 60px)', paddingTop: '80px' }}
   >
     <div className="max-w-7xl mx-auto w-full">
       <motion.h2
@@ -686,7 +686,7 @@ const Showcase = () => {
   {/* Team Section */}
   <section
     className="snap-start flex items-center justify-center px-4"
-    style={{ minHeight: 'calc(100vh - 60px)' }}
+    style={{ minHeight: 'calc(100vh - 60px)', paddingTop: '80px' }}
   >
     <div className="max-w-7xl mx-auto w-full">
       <motion.h2
